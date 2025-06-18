@@ -353,7 +353,7 @@ app.add_middleware(
 )
 
 # Global agent instance
-agent = CoreVibeDeckerAgent()
+# agent = CoreVibeDeckerAgent()
 
 # ============================================================================
 # API ENDPOINTS
@@ -476,6 +476,7 @@ async def get_presentation_result(session_id: str):
 async def process_presentation(session_id: str, credentials):
     """Background task to process presentation"""
     try:
+        agent = CoreVibeDeckerAgent() 
         session = sessions[session_id]
         request_data = session.request_data
         
