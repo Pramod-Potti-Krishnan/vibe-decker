@@ -328,7 +328,7 @@ def get_google_auth_flow():
                 "redirect_uris": [os.getenv('GOOGLE_REDIRECT_URI', 'https://vibe-decker-production.up.railway.app/auth/callback')]
             }
         },
-        scopes=['https://www.googleapis.com/auth/presentations']
+        scopes=['https://www.googleapis.com/auth/presentations','https://www.googleapis.com/auth/drive.file']
     )
     flow.redirect_uri = os.getenv('GOOGLE_REDIRECT_URI', 'https://vibe-decker-production.up.railway.app/auth/callback')
     return flow
