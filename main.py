@@ -584,16 +584,35 @@ async def process_presentation(session_id: str, credentials):
         
         slides_url = await agent.populate_slides(presentation_id, slides_data)
         
+        # # Complete
+        # session.status = "completed"
+        # session.progress = 100
+        # session.message = "Presentation ready!"
+        # session.result = {
+        #     "slides_url": slides_url,
+        #     "presentation_id": presentation_id,
+        #     "slide_count": len(slides_data),
+        #     "preview_data": slides_data
+        # }
+        # --- START OF CHANGES ---
+
+        # Create the embed URL for iframe viewing from the presentation_id
+        embed_url = f"https://docs.google.com/presentation/d/{presentation_id}/embed?start=false&loop=false&delayms=3000"
+
         # Complete
         session.status = "completed"
         session.progress = 100
         session.message = "Presentation ready!"
         session.result = {
             "slides_url": slides_url,
+            "embed_url": embed_url, # <-- Add the new embed_url here
             "presentation_id": presentation_id,
             "slide_count": len(slides_data),
             "preview_data": slides_data
         }
+        
+        # --- END OF CHANGES ---
+    
         
     except Exception as e:
         logger.error(f"Presentation processing failed: {str(e)}")
