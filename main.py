@@ -2,7 +2,7 @@
 Vibe Decker Webhook API - Streamlined Core Version
 Optimized for frontend consumption with essential features only
 """
-
+import logging
 import os
 import asyncio
 import uuid
@@ -359,13 +359,66 @@ app.add_middleware(
 # API ENDPOINTS
 # ============================================================================
 
+# @app.post("/api/generate-presentation", response_model=PresentationResponse)
+# async def generate_presentation(
+#     request: PresentationRequest,
+#     background_tasks: BackgroundTasks
+# ):
+#     """Generate a presentation from content"""
+#     try:
+#         # Create session
+#         session_id = str(uuid.uuid4())
+#         session = Session(
+#             id=session_id,
+#             status="pending_auth",
+#             progress=0,
+#             message="Waiting for Google authentication",
+#             request_data=request.dict()
+#         )
+#         sessions[session_id] = session
+        
+#         # Generate auth URL
+#         ###flow = get_google_auth_flow()
+#         ###flow.redirect_uri = f"{os.getenv('BASE_URL', 'http://localhost:8000')}/auth/callback/{session_id}"
+#         ###auth_url, _ = flow.authorization_url(prompt='consent')
+#         # Generate auth URL
+#         flow = get_google_auth_flow()
+#         # The session_id is passed via the 'state' parameter, not the redirect_uri
+#         auth_url, _ = flow.authorization_url(prompt='consent', state=session_id)
+
+
+
+#         return PresentationResponse(
+#             session_id=session_id,
+#             status="pending_auth",
+#             message="Please complete Google authentication",
+#             auth_url=auth_url
+#         )
+        
+#     except Exception as e:
+#         logger.error(f"Failed to start presentation generation: {str(e)}")
+#         raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.post("/api/generate-presentation", response_model=PresentationResponse)
 async def generate_presentation(
     request: PresentationRequest,
     background_tasks: BackgroundTasks
 ):
     """Generate a presentation from content"""
+    # ==================== START: DIAGNOSTIC LOGGING ====================
+    logger.info("--- STARTING NEW PRESENTATION REQUEST ---")
     try:
+        client_id = os.getenv('GOOGLE_CLIENT_ID')
+        redirect_uri = os.getenv('GOOGLE_REDIRECT_URI')
+        
+        logger.info(f"Read from environment - CLIENT_ID: {client_id}")
+        logger.info(f"Read from environment - REDIRECT_URI: {redirect_uri}")
+
+        if not client_id or not redirect_uri:
+            logger.error("CRITICAL: Environment variables for Google Auth are missing!")
+            raise HTTPException(status_code=500, detail="Server misconfiguration: Google credentials not found.")
+
         # Create session
         session_id = str(uuid.uuid4())
         session = Session(
@@ -378,15 +431,15 @@ async def generate_presentation(
         sessions[session_id] = session
         
         # Generate auth URL
-        ###flow = get_google_auth_flow()
-        ###flow.redirect_uri = f"{os.getenv('BASE_URL', 'http://localhost:8000')}/auth/callback/{session_id}"
-        ###auth_url, _ = flow.authorization_url(prompt='consent')
-        # Generate auth URL
         flow = get_google_auth_flow()
-        # The session_id is passed via the 'state' parameter, not the redirect_uri
+        
+        # Log the flow object's configured values before generating the URL
+        logger.info(f"Flow object created. Flow's redirect_uri: {flow.redirect_uri}")
+        
         auth_url, _ = flow.authorization_url(prompt='consent', state=session_id)
-
-
+        
+        logger.info(f"Generated auth_url. Length: {len(auth_url)}")
+        logger.info("--- SUCCESSFULLY GENERATED AUTH URL ---")
 
         return PresentationResponse(
             session_id=session_id,
@@ -396,8 +449,11 @@ async def generate_presentation(
         )
         
     except Exception as e:
-        logger.error(f"Failed to start presentation generation: {str(e)}")
+        # This will catch any error during the setup and log it.
+        logger.error(f"FATAL ERROR during auth url generation: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+    # ===================== END: DIAGNOSTIC LOGGING =====================
+
 
 ##@app.get("/auth/callback/{session_id}")
 ##async def auth_callback(session_id: str, code: str, background_tasks: BackgroundTasks):
