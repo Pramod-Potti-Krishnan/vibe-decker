@@ -487,7 +487,7 @@ async def auth_callback(code: str, state: str, background_tasks: BackgroundTasks
         # return JSONResponse({
         #     "message": "Authentication successful. Processing presentation...",
         #     "session_id": session_id
-
+        # })
         html_content = """
         <!DOCTYPE html>
         <html>
@@ -507,7 +507,7 @@ async def auth_callback(code: str, state: str, background_tasks: BackgroundTasks
 
 
         
-        })
+    
         
     except Exception as e:
         logger.error(f"Auth callback failed: {str(e)}")
