@@ -17,6 +17,7 @@ load_dotenv() # <--- AND ADD THIS LINE
 from fastapi import FastAPI, HTTPException, BackgroundTasks, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
 # Google services
@@ -483,9 +484,29 @@ async def auth_callback(code: str, state: str, background_tasks: BackgroundTasks
         session.progress = 10
         session.message = "Authentication complete. Generating slides..."
         
-        return JSONResponse({
-            "message": "Authentication successful. Processing presentation...",
-            "session_id": session_id
+        # return JSONResponse({
+        #     "message": "Authentication successful. Processing presentation...",
+        #     "session_id": session_id
+
+        html_content = """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Authentication Successful</title>
+        </head>
+        <body>
+            <p>Authentication successful! You can now close this window.</p>
+            <script>
+                window.close();
+            </script>
+        </body>
+        </html>
+        """
+        return HTMLResponse(content=html_content)
+        # === END OF CHANGE ===
+
+
+        
         })
         
     except Exception as e:
